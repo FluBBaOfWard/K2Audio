@@ -1,4 +1,4 @@
-;@ SN76496 sound chip emulator for SMS.
+;@ SNK Neogeo Pocket K2Audio sound chip emulator for ARM32.
 #ifdef __arm__
 
 #include "SN76496.i"
@@ -9,7 +9,7 @@
 	.global sn76496GetStateSize
 	.global sn76496Mixer
 	.global sn76496W
-	.global sn76496GGW
+	.global sn76496L_W
 								;@ These values are for the SMS/GG/MD vdp/sound chip.
 .equ PFEED_SMS,	0x8000			;@ Periodic Noise Feedback
 .equ WFEED_SMS,	0x9000			;@ White Noise Feedback
@@ -178,8 +178,11 @@ doVolume:
 	bx lr
 
 setFreq:
-	cmp r2,#3					;@ Noise channel
-	beq setNoiseFreq
+//	cmp r2,#3					;@ Noise channel
+//	beq setNoiseFreq
+	cmp r2,#2
+	bhi setNoiseFreq
+	bxmi lr
 	tst r0,#0x80
 	andeq r0,r0,#0x3F
 	movne r0,r0,lsl#4
@@ -214,12 +217,41 @@ noiseFeedback:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-sn76496GGW:
+sn76496L_W:					;@ r0 = value, snptr = r12 = struct-pointer
 ;@----------------------------------------------------------------------------
-	ldrb r1,[snptr,#ggStereo]
-	eors r1,r1,r0
-	strbne r0,[snptr,#ggStereo]
-	strbne r1,[snptr,#snAttChg]
+	tst r0,#0x80
+	andne r2,r0,#0x70
+	strbne r2,[snptr,#snLastRegL]
+	ldrbeq r2,[snptr,#snLastRegL]
+	movs r2,r2,lsr#5
+	add r1,snptr,r2,lsl#2
+	bcc setFreqL
+doVolumeL:
+	and r0,r0,#0x0F
+	ldrb r2,[r1,#ch0AttL]
+	eors r2,r2,r0
+	strbne r0,[r1,#ch0AttL]
+	strbne r2,[snptr,#snAttChg]
+	bx lr
+
+setFreqL:
+	cmp r2,#3					;@ Noise channel
+	bxeq lr
+	tst r0,#0x80
+	andeq r0,r0,#0x3F
+	movne r0,r0,lsl#4
+	strbeq r0,[r1,#ch0Reg+1]
+	strbne r0,[r1,#ch0Reg]
+	ldrh r0,[r1,#ch0Reg]
+	movs r0,r0,lsl#2
+	cmp r0,#0x0180				;@ We set any value under 6 to 1 to fix aliasing.
+	movmi r0,#0x0040			;@ Value zero is same as 1 on SMS.
+	strh r0,[r1,#ch0Frq]
+
+	cmp r2,#2					;@ Ch2
+	ldrbeq r1,[snptr,#ch3Reg]
+	cmpeq r1,#3
+	strheq r0,[snptr,#ch3Frq]
 	bx lr
 
 ;@----------------------------------------------------------------------------
@@ -227,34 +259,31 @@ calculateVolumes:
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{r0-r6}
 
-	ldrb r3,[snptr,#ch0Att]
-	ldrb r4,[snptr,#ch1Att]
-	ldrb r5,[snptr,#ch2Att]
-	ldrb r6,[snptr,#ch3Att]
 	adr r1,attenuation1_4
-	ldr r3,[r1,r3,lsl#2]
-	ldr r4,[r1,r4,lsl#2]
-	ldr r5,[r1,r5,lsl#2]
-	ldr r6,[r1,r6,lsl#2]
 
-	ldrb r0,[snptr,#ggStereo]
-	mov r1,#-1
-	tst r0,#0x01
-	biceq r3,r3,r1,lsl#16
-	tst r0,#0x02
-	biceq r4,r4,r1,lsl#16
-	tst r0,#0x04
-	biceq r5,r5,r1,lsl#16
-	tst r0,#0x08
-	biceq r6,r6,r1,lsl#16
-	tst r0,#0x10
-	biceq r3,r3,r1,lsr#16
-	tst r0,#0x20
-	biceq r4,r4,r1,lsr#16
-	tst r0,#0x40
-	biceq r5,r5,r1,lsr#16
-	tst r0,#0x80
-	biceq r6,r6,r1,lsr#16
+	ldrb r0,[snptr,#ch0Att]
+	ldr r3,[r1,r0,lsl#2]
+	ldrb r0,[snptr,#ch0AttL]
+	ldr r0,[r1,r0,lsl#2]
+	orr r3,r3,r0,lsl#16
+
+	ldrb r0,[snptr,#ch1Att]
+	ldr r4,[r1,r0,lsl#2]
+	ldrb r0,[snptr,#ch1AttL]
+	ldr r0,[r1,r0,lsl#2]
+	orr r4,r4,r0,lsl#16
+
+	ldrb r0,[snptr,#ch2Att]
+	ldr r5,[r1,r0,lsl#2]
+	ldrb r0,[snptr,#ch2AttL]
+	ldr r0,[r1,r0,lsl#2]
+	orr r5,r5,r0,lsl#16
+
+	ldrb r0,[snptr,#ch3Att]
+	ldr r6,[r1,r0,lsl#2]
+	ldrb r0,[snptr,#ch3AttL]
+	ldr r0,[r1,r0,lsl#2]
+	orr r6,r6,r0,lsl#16
 
 	add r2,snptr,#calculatedVolumes
 	mov r1,#15
@@ -278,8 +307,8 @@ attenuation:						;@ each step * 0.79370053 (-2dB?)
 	.long 0x3FFF3FFF,0x32CB32CB,0x28512851,0x20002000,0x19661966,0x14281428,0x10001000,0x0CB30CB3
 	.long 0x0A140A14,0x08000800,0x06590659,0x050A050A,0x04000400,0x032C032C,0x02850285,0x00000000
 attenuation1_4:						;@ each step * 0.79370053 (-2dB?)
-	.long 0x0FFF0FFF,0x0CB30CB3,0x0A140A14,0x08000800,0x06590659,0x050A050A,0x04000400,0x032C032C
-	.long 0x02850285,0x02000200,0x01960196,0x01430143,0x01000100,0x00CB00CB,0x00A100A1,0x00000000
+	.long 0x0FFF,0x0CB3,0x0A14,0x0800,0x0659,0x050A,0x0400,0x032C
+	.long 0x0285,0x0200,0x0196,0x0143,0x0100,0x00CB,0x00A1,0x0000
 ;@----------------------------------------------------------------------------
 	.end
 #endif // #ifdef __arm__
