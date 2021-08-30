@@ -21,7 +21,7 @@
 
 	snAttChg:		.byte 0
 	snLastReg:		.byte 0
-	ggStereo:		.byte 0
+	snLastRegL:		.byte 0
 	snPadding:		.space 1
 
 	ch0Reg:			.short 0
@@ -33,7 +33,15 @@
 	ch3Reg:			.short 0
 	ch3Att:			.short 0
 
-	snPadding2:		.space 4*4
+	ch0RegL:		.short 0
+	ch0AttL:		.short 0
+	ch1RegL:		.short 0
+	ch1AttL:		.short 0
+	ch2RegL:		.short 0
+	ch2AttL:		.short 0
+	ch3RegL:		.short 0
+	ch3AttL:		.short 0
+
 	calculatedVolumes:	.space 16*2*2
 
 	snSize:
