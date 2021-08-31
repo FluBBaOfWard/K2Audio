@@ -113,8 +113,6 @@ rLoop:
 	mov r1,#calculatedVolumes
 	str r1,[snptr,#currentBits]
 	str r0,[snptr,r1]
-	mov r0,#0xFF
-	strb r0,[snptr,#ggStereo]
 
 	bx lr
 
