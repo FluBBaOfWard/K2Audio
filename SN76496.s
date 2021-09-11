@@ -190,7 +190,7 @@ setFreq:
 	movs r0,r0,lsl#2
 	cmp r0,#0x0180				;@ We set any value under 6 to 1 to fix aliasing.
 	movmi r0,#0x0040			;@ Value zero is same as 1 on SMS.
-	strh r0,[r1,#ch0Frq]
+	strh r0,[snptr,#ch1Reg]
 
 	cmp r2,#2					;@ Ch2
 	ldrbeq r1,[snptr,#ch3Reg]
@@ -210,7 +210,7 @@ noiseFeedback:
 	mov r2,#0x0400				;@ These values sound ok
 	mov r2,r2,lsl r1
 	cmp r1,#3
-	ldrheq r2,[snptr,#ch2Frq]
+	ldrheq r2,[snptr,#ch1Reg]
 	strh r2,[snptr,#ch3Frq]
 	bx lr
 
@@ -238,18 +238,18 @@ setFreqL:
 	tst r0,#0x80
 	andeq r0,r0,#0x3F
 	movne r0,r0,lsl#4
-	strbeq r0,[r1,#ch0Reg+1]
-	strbne r0,[r1,#ch0Reg]
-	ldrh r0,[r1,#ch0Reg]
+	strbeq r0,[r1,#ch0RegL+1]
+	strbne r0,[r1,#ch0RegL]
+	ldrh r0,[r1,#ch0RegL]
 	movs r0,r0,lsl#2
 	cmp r0,#0x0180				;@ We set any value under 6 to 1 to fix aliasing.
 	movmi r0,#0x0040			;@ Value zero is same as 1 on SMS.
 	strh r0,[r1,#ch0Frq]
 
-	cmp r2,#2					;@ Ch2
-	ldrbeq r1,[snptr,#ch3Reg]
-	cmpeq r1,#3
-	strheq r0,[snptr,#ch3Frq]
+//	cmp r2,#2					;@ Ch2
+//	ldrbeq r1,[snptr,#ch3Reg]
+//	cmpeq r1,#3
+//	strheq r0,[snptr,#ch3Frq]
 	bx lr
 
 ;@----------------------------------------------------------------------------
