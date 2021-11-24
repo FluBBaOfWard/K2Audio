@@ -1,4 +1,4 @@
-;@ ASM header for the SN76496 emulator
+;@ ASM header for the K2Audio/SN76496 emulator
 ;@
 
 	snptr			.req r12

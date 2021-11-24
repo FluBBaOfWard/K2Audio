@@ -25,7 +25,7 @@ typedef struct {
 
 	u8 snAttChg;
 	u8 snLastReg;
-	u8 ggStereo;
+	u8 snLastRegL;
 	u8 snPadding[1];
 
 	u16 ch0Reg;
@@ -37,12 +37,23 @@ typedef struct {
 	u16 ch3Reg;
 	u16 ch3Att;
 
-	u32 snPadding2[4];
+	u16 ch0RegL;
+	u16 ch0AttL;
+	u16 ch1RegL;
+	u16 ch1AttL;
+	u16 ch2RegL;
+	u16 ch2AttL;
+	u16 ch3RegL;
+	u16 ch3AttL;
+
 	s16 calculatedVolumes[16*2];
 } SN76496;
 
-
-void sn76496Reset(int chiptype, SN76496 *chip);
+/**
+ * Reset/initialize SN76496 chip.
+ * @param  *chip: The SN76496 chip.
+ */
+void sn76496Reset(SN76496 *chip);
 
 /**
  * Saves the state of the SN76496 chip to the destination.
@@ -66,8 +77,28 @@ int sn76496LoadState(SN76496 *chip, const void *source);
  */
 int sn76496GetStateSize(void);
 
+/**
+ * Runs the sound chip for len number of cycles, output is 1/4 samples,
+ * so if actual chip would output 218kHz this mixer would render at ~55kHz.
+ * @param  *len: Number of cycles to run.
+ * @param  *dest: Pointer to buffer where sound is rendered.
+ * @param  *chip: The SN76496 chip.
+ */
 void sn76496Mixer(int len, void *dest, SN76496 *chip);
+
+/**
+ * Write value to SN76496 chip port#0.
+ * @param  value: value to write.
+ * @param  *chip: The SN76496 chip.
+ */
 void sn76496W(u8 val, SN76496 *chip);
+
+/**
+ * Write value to SN76496 chip port#1.
+ * @param  value: value to write.
+ * @param  *chip: The SN76496 chip.
+ */
+void sn76496L_W(u8 val, SN76496 *chip);
 
 
 #ifdef __cplusplus

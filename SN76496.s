@@ -14,14 +14,6 @@
 .equ PFEED_SMS,	0x8000			;@ Periodic Noise Feedback
 .equ WFEED_SMS,	0x9000			;@ White Noise Feedback
 
-								;@ These values are for the SN76489/SN76496 sound chip.
-.equ PFEED_SN,	0x4000			;@ Periodic Noise Feedback
-.equ WFEED_SN,	0x6000			;@ White Noise Feedback
-
-								;@ These values are for the NCR 8496 sound chip.
-.equ PFEED_NCR,	0x4000			;@ Periodic Noise Feedback
-.equ WFEED_NCR,	0x4400			;@ White Noise Feedback
-
 	.syntax unified
 	.arm
 
@@ -34,56 +26,57 @@
 #endif
 	.align 2
 ;@----------------------------------------------------------------------------
-;@ r0  = mix length.
-;@ r1  = mixerbuffer.
-;@ r2 -> r5 = pos+freq.
-;@ r6  = currentBits.
-;@ r7  = noise generator.
-;@ r8  = noise feedback.
-;@ lr  = mixer reg.
-;@ r12 = snptr.
+;@ r0 = mix length.
+;@ r1 = mixerbuffer.
+;@ r2 = snptr.
+;@ r3 -> r6 = pos+freq.
+;@ r7  = currentBits.
+;@ r8  = noise generator.
+;@ r9  = noise feedback.
+;@ r10  = mixer reg.
 ;@----------------------------------------------------------------------------
-sn76496Mixer:				;@ r0=len, r1=dest, r12=snptr
+sn76496Mixer:				;@ In r0=len, r1=dest, r2=snptr
+	.type   sn76496Mixer STT_FUNC
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r4-r9,lr}
-	ldmia snptr,{r2-r8,lr}		;@ Load freq/addr0-3, currentBits, rng, noisefb, attChg
+	stmfd sp!,{r4-r10,lr}
+	ldmia r2,{r3-r9,lr}		;@ Load freq/addr0-3, currentBits, rng, noisefb, attChg
 	tst lr,#0xff
 	blne calculateVolumes
 ;@----------------------------------------------------------------------------
 mixLoop:
-	mov lr,#0x80000000
+	mov r10,#0x80000000
 innerMixLoop:
-	adds r2,r2,#0x00400000
-	subcs r2,r2,r2,lsl#16
-	eorcs r6,r6,#0x04
-
 	adds r3,r3,#0x00400000
 	subcs r3,r3,r3,lsl#16
-	eorcs r6,r6,#0x08
+	eorcs r7,r7,#0x04
 
 	adds r4,r4,#0x00400000
 	subcs r4,r4,r4,lsl#16
-	eorcs r6,r6,#0x10
+	eorcs r7,r7,#0x08
 
-	adds r5,r5,#0x00400000		;@ 0x00200000?
+	adds r5,r5,#0x00400000
 	subcs r5,r5,r5,lsl#16
-	biccs r6,r6,#0x20
-	movscs r7,r7,lsr#1
-	eorcs r7,r7,r8
-	orrcs r6,r6,#0x20
+	eorcs r7,r7,#0x10
 
-	ldr r9,[snptr,r6]
-	add lr,lr,r9
+	adds r6,r6,#0x00400000		;@ 0x00200000?
+	subcs r6,r6,r6,lsl#16
+	biccs r7,r7,#0x20
+	movscs r8,r8,lsr#1
+	eorcs r8,r8,r9
+	orrcs r7,r7,#0x20
+
+	ldr lr,[r2,r7]
+	add r10,r10,lr
 	sub r0,r0,#1
 	tst r0,#3
 	bne innerMixLoop
-	eor lr,lr,#0x00008000
+	eor r10,r10,#0x00008000
 	cmp r0,#0
-	strpl lr,[r1],#4
+	strpl r10,[r1],#4
 	bhi mixLoop
 
-	stmia snptr,{r2-r7}			;@ Writeback freq,addr,currentBits,rng
-	ldmfd sp!,{r4-r9,lr}
+	stmia r2,{r3-r8}			;@ Writeback freq,addr,currentBits,rng
+	ldmfd sp!,{r4-r10,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
 
@@ -91,33 +84,26 @@ innerMixLoop:
 	.align 2
 
 ;@----------------------------------------------------------------------------
-sn76496Reset:				;@ r0 = chiptype SMS/SN76496, snptr=r12=pointer to struct
+sn76496Reset:				;@ In r0 = pointer to struct
+	.type   sn76496Reset STT_FUNC
 ;@----------------------------------------------------------------------------
-
-	cmp r0,#1
-	adr r0,SMSFeedback
-	addeq r0,r0,#12
-	addhi r0,r0,#24
-	ldmia r0,{r1-r3}
-	adr r0,noiseFeedback
-	str r2,[r0],#8
-	str r3,[r0]
-
-	mov r0,#0
+	mov r1,#0
 	mov r2,#snSize/4			;@ 60/4=15
 rLoop:
 	subs r2,r2,#1
-	strpl r0,[snptr,r2,lsl#2]
+	strpl r1,[r0,r2,lsl#2]
 	bhi rLoop
-	strh r1,[snptr,#noiseFB]
-	mov r1,#calculatedVolumes
-	str r1,[snptr,#currentBits]
-	str r0,[snptr,r1]
+
+	ldr r2,=(WFEED_SMS<<16)+PFEED_SMS
+	strh r2,[r0,#noiseFB]
+	mov r2,#calculatedVolumes
+	str r2,[r0,#currentBits]	;@ Add offset to calculatedVolumes
+	str r1,[r0,r2]
 
 	bx lr
 
 ;@----------------------------------------------------------------------------
-sn76496SaveState:		;@ In r0=destination, r1=snptr. Out r0=state size.
+sn76496SaveState:			;@ In r0=destination, r1=snptr. Out r0=state size.
 	.type   sn76496SaveState STT_FUNC
 ;@----------------------------------------------------------------------------
 	mov r2,#snSize
@@ -128,7 +114,7 @@ sn76496SaveState:		;@ In r0=destination, r1=snptr. Out r0=state size.
 	ldmfd sp!,{r0,lr}
 	bx lr
 ;@----------------------------------------------------------------------------
-sn76496LoadState:		;@ In r0=snptr, r1=source. Out r0=state size.
+sn76496LoadState:			;@ In r0=snptr, r1=source. Out r0=state size.
 	.type   sn76496LoadState STT_FUNC
 ;@----------------------------------------------------------------------------
 	stmfd sp!,{lr}
@@ -138,152 +124,138 @@ sn76496LoadState:		;@ In r0=snptr, r1=source. Out r0=state size.
 
 	ldmfd sp!,{lr}
 ;@----------------------------------------------------------------------------
-sn76496GetStateSize:	;@ Out r0=state size.
+sn76496GetStateSize:		;@ Out r0=state size.
 	.type   sn76496GetStateSize STT_FUNC
 ;@----------------------------------------------------------------------------
 	mov r0,#snSize
 	bx lr
-;@----------------------------------------------------------------------------
-SMSFeedback:
-	.long PFEED_SMS
-	mov r0,#PFEED_SMS			;@ Periodic noise
-	movne r0,#WFEED_SMS			;@ White noise
-SNFeedback:
-	.long PFEED_SN
-	mov r0,#PFEED_SN			;@ Periodic noise
-	movne r0,#WFEED_SN			;@ White noise
-NCRFeedback:
-	.long PFEED_NCR
-	mov r0,#PFEED_NCR			;@ Periodic noise
-	movne r0,#WFEED_NCR			;@ White noise
 
 ;@----------------------------------------------------------------------------
-sn76496W:					;@ r0 = value, snptr = r12 = struct-pointer
+sn76496W:					;@ In r0 = value, r1 = struct-pointer
+	.type   sn76496W STT_FUNC
 ;@----------------------------------------------------------------------------
 	tst r0,#0x80
-	andne r2,r0,#0x70
-	strbne r2,[snptr,#snLastReg]
-	ldrbeq r2,[snptr,#snLastReg]
-	movs r2,r2,lsr#5
-	add r1,snptr,r2,lsl#2
+	andne r3,r0,#0x70
+	strbne r3,[r1,#snLastReg]
+	ldrbeq r3,[r1,#snLastReg]
+	movs r3,r3,lsr#5
+	add r2,r1,r3,lsl#2
 	bcc setFreq
 doVolume:
 	and r0,r0,#0x0F
-	ldrb r2,[r1,#ch0Att]
-	eors r2,r2,r0
-	strbne r0,[r1,#ch0Att]
-	strbne r2,[snptr,#snAttChg]
+	ldrb r3,[r2,#ch0Att]
+	eors r3,r3,r0
+	strbne r0,[r2,#ch0Att]
+	strbne r3,[r1,#snAttChg]
 	bx lr
 
 setFreq:
-//	cmp r2,#3					;@ Noise channel
-//	beq setNoiseFreq
-	cmp r2,#2
+	cmp r3,#2
 	bhi setNoiseFreq
 	bxmi lr
 	tst r0,#0x80
 	andeq r0,r0,#0x3F
 	movne r0,r0,lsl#4
-	strbeq r0,[r1,#ch0Reg+1]
-	strbne r0,[r1,#ch0Reg]
-	ldrh r0,[r1,#ch0Reg]
+	strbeq r0,[r2,#ch0Reg+1]
+	strbne r0,[r2,#ch0Reg]
+	ldrh r0,[r2,#ch0Reg]
 	movs r0,r0,lsl#2
 	cmp r0,#0x0180				;@ We set any value under 6 to 1 to fix aliasing.
 	movmi r0,#0x0040			;@ Value zero is same as 1 on SMS.
-	strh r0,[snptr,#ch1Reg]
+	strh r0,[r1,#ch1Reg]
 
-	cmp r2,#2					;@ Ch2
-	ldrbeq r1,[snptr,#ch3Reg]
-	cmpeq r1,#3
-	strheq r0,[snptr,#ch3Frq]
+	cmp r3,#2					;@ Ch2
+	ldrbeq r2,[r1,#ch3Reg]
+	cmpeq r2,#3
+	strheq r0,[r1,#ch3Frq]
 	bx lr
 
 setNoiseFreq:
-	and r1,r0,#3
-	strb r1,[snptr,#ch3Reg]
+	and r2,r0,#3
+	strb r2,[r1,#ch3Reg]
 	tst r0,#4
-noiseFeedback:
 	mov r0,#PFEED_SMS			;@ Periodic noise
-	strh r0,[snptr,#rng]
+	strh r0,[r1,#rng]
 	movne r0,#WFEED_SMS			;@ White noise
-	strh r0,[snptr,#noiseFB]
-	mov r2,#0x0400				;@ These values sound ok
-	mov r2,r2,lsl r1
-	cmp r1,#3
-	ldrheq r2,[snptr,#ch1Reg]
-	strh r2,[snptr,#ch3Frq]
+	strh r0,[r1,#noiseFB]
+	mov r3,#0x0400				;@ These values sound ok
+	mov r3,r3,lsl r2
+	cmp r2,#3
+	ldrheq r3,[r1,#ch1Reg]
+	strh r3,[r1,#ch3Frq]
 	bx lr
 
 ;@----------------------------------------------------------------------------
-sn76496L_W:					;@ r0 = value, snptr = r12 = struct-pointer
+sn76496L_W:					;@ In r0 = value, r1 = struct-pointer
+	.type   sn76496L_W STT_FUNC
 ;@----------------------------------------------------------------------------
 	tst r0,#0x80
-	andne r2,r0,#0x70
-	strbne r2,[snptr,#snLastRegL]
-	ldrbeq r2,[snptr,#snLastRegL]
-	movs r2,r2,lsr#5
-	add r1,snptr,r2,lsl#2
+	andne r3,r0,#0x70
+	strbne r3,[r1,#snLastRegL]
+	ldrbeq r3,[r1,#snLastRegL]
+	movs r3,r3,lsr#5
+	add r2,r1,r3,lsl#2
 	bcc setFreqL
 doVolumeL:
 	and r0,r0,#0x0F
-	ldrb r2,[r1,#ch0AttL]
-	eors r2,r2,r0
-	strbne r0,[r1,#ch0AttL]
-	strbne r2,[snptr,#snAttChg]
+	ldrb r3,[r2,#ch0AttL]
+	eors r3,r3,r0
+	strbne r0,[r2,#ch0AttL]
+	strbne r3,[r1,#snAttChg]
 	bx lr
 
 setFreqL:
-	cmp r2,#3					;@ Noise channel
+	cmp r3,#3					;@ Noise channel
 	bxeq lr
 	tst r0,#0x80
 	andeq r0,r0,#0x3F
 	movne r0,r0,lsl#4
-	strbeq r0,[r1,#ch0RegL+1]
-	strbne r0,[r1,#ch0RegL]
-	ldrh r0,[r1,#ch0RegL]
+	strbeq r0,[r2,#ch0RegL+1]
+	strbne r0,[r2,#ch0RegL]
+	ldrh r0,[r2,#ch0RegL]
 	movs r0,r0,lsl#2
 	cmp r0,#0x0180				;@ We set any value under 6 to 1 to fix aliasing.
 	movmi r0,#0x0040			;@ Value zero is same as 1 on SMS.
-	strh r0,[r1,#ch0Frq]
+	strh r0,[r2,#ch0Frq]
 
-//	cmp r2,#2					;@ Ch2
-//	ldrbeq r1,[snptr,#ch3Reg]
-//	cmpeq r1,#3
-//	strheq r0,[snptr,#ch3Frq]
+//	cmp r3,#2					;@ Ch2
+//	ldrbeq r2,[r1,#ch3Reg]
+//	cmpeq r2,#3
+//	strheq r0,[r1,#ch3Frq]
 	bx lr
 
 ;@----------------------------------------------------------------------------
-calculateVolumes:
+calculateVolumes:			;@ In r2 = snptr
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r0-r6}
+	stmfd sp!,{r0,r1,r3-r7}
 
 	adr r1,attenuation1_4
 
-	ldrb r0,[snptr,#ch0Att]
+	ldrb r0,[r2,#ch0Att]
 	ldr r3,[r1,r0,lsl#2]
-	ldrb r0,[snptr,#ch0AttL]
+	ldrb r0,[r2,#ch0AttL]
 	ldr r0,[r1,r0,lsl#2]
 	orr r3,r3,r0,lsl#16
 
-	ldrb r0,[snptr,#ch1Att]
+	ldrb r0,[r2,#ch1Att]
 	ldr r4,[r1,r0,lsl#2]
-	ldrb r0,[snptr,#ch1AttL]
+	ldrb r0,[r2,#ch1AttL]
 	ldr r0,[r1,r0,lsl#2]
 	orr r4,r4,r0,lsl#16
 
-	ldrb r0,[snptr,#ch2Att]
+	ldrb r0,[r2,#ch2Att]
 	ldr r5,[r1,r0,lsl#2]
-	ldrb r0,[snptr,#ch2AttL]
+	ldrb r0,[r2,#ch2AttL]
 	ldr r0,[r1,r0,lsl#2]
 	orr r5,r5,r0,lsl#16
 
-	ldrb r0,[snptr,#ch3Att]
+	ldrb r0,[r2,#ch3Att]
 	ldr r6,[r1,r0,lsl#2]
-	ldrb r0,[snptr,#ch3AttL]
+	ldrb r0,[r2,#ch3AttL]
 	ldr r0,[r1,r0,lsl#2]
 	orr r6,r6,r0,lsl#16
 
-	add r2,snptr,#calculatedVolumes
+	add r7,r2,#calculatedVolumes
 	mov r1,#15
 volLoop:
 	ands r0,r1,#0x01
@@ -294,11 +266,11 @@ volLoop:
 	addne r0,r0,r5
 	tst r1,#0x08
 	addne r0,r0,r6
-	str r0,[r2,r1,lsl#2]
+	str r0,[r7,r1,lsl#2]
 	subs r1,r1,#1
 	bne volLoop
-	strb r1,[snptr,#snAttChg]
-	ldmfd sp!,{r0-r6}
+	strb r1,[r2,#snAttChg]
+	ldmfd sp!,{r0,r1,r3-r7}
 	bx lr
 ;@----------------------------------------------------------------------------
 attenuation:						;@ each step * 0.79370053 (-2dB?)

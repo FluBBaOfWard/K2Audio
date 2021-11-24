@@ -2,6 +2,9 @@ SN76496 revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-
 
 
+V1.6.0 - 2021-11-24 (FluBBa)
+	Refactored all functions to work directly from C.
+
 V1.5.2 - 2021-06-03 (FluBBa)
 	Forked to emulate the NeoGeo Pocket sound.
 
