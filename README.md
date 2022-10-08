@@ -1,4 +1,4 @@
-# K2Audio
+# K2Audio V1.6.1
 SNK NeoGeo Pocket sound chip emulator for ARM32.
 
 SN76496/SN76489 with stereo extension, from the NeoGeo Pocket.

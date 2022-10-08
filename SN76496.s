@@ -106,7 +106,7 @@ rLoop:
 sn76496SaveState:			;@ In r0=destination, r1=snptr. Out r0=state size.
 	.type   sn76496SaveState STT_FUNC
 ;@----------------------------------------------------------------------------
-	mov r2,#snSize
+	mov r2,#snStateEnd-snStateStart
 	stmfd sp!,{r2,lr}
 
 	bl memcpy
@@ -117,17 +117,19 @@ sn76496SaveState:			;@ In r0=destination, r1=snptr. Out r0=state size.
 sn76496LoadState:			;@ In r0=snptr, r1=source. Out r0=state size.
 	.type   sn76496LoadState STT_FUNC
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{lr}
+	stmfd sp!,{r0,lr}
 
-	mov r2,#snSize
+	mov r2,#snStateEnd-snStateStart
 	bl memcpy
+	ldmfd sp!,{r0,lr}
+	mov r1,#1
+	strb r1,[r0,#snAttChg]
 
-	ldmfd sp!,{lr}
 ;@----------------------------------------------------------------------------
 sn76496GetStateSize:		;@ Out r0=state size.
 	.type   sn76496GetStateSize STT_FUNC
 ;@----------------------------------------------------------------------------
-	mov r0,#snSize
+	mov r0,#snStateEnd-snStateStart
 	bx lr
 
 ;@----------------------------------------------------------------------------
