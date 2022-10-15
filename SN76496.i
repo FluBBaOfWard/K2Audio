@@ -1,4 +1,11 @@
-;@ ASM header for the K2Audio/SN76496 emulator
+;@
+;@  SN76496.i
+;@  K2Audio
+;@
+;@  Created by Fredrik Ahlström on 2008-04-02.
+;@  Copyright © 2008-2022 Fredrik Ahlström. All rights reserved.
+;@
+;@ ASM header for the K2GE Audio emulator
 ;@
 
 	snptr			.req r12

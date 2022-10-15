@@ -1,4 +1,12 @@
+;@
+;@  SN76496.s
+;@  K2Audio
+;@
+;@  Created by Fredrik Ahlström on 2008-04-02.
+;@  Copyright © 2008-2022 Fredrik Ahlström. All rights reserved.
+;@
 ;@ SNK Neogeo Pocket K2Audio sound chip emulator for ARM32.
+
 #ifdef __arm__
 
 #include "SN76496.i"
@@ -82,13 +90,12 @@ innerMixLoop:
 
 	.section .text
 	.align 2
-
 ;@----------------------------------------------------------------------------
 sn76496Reset:				;@ In r0 = pointer to struct
 	.type   sn76496Reset STT_FUNC
 ;@----------------------------------------------------------------------------
 	mov r1,#0
-	mov r2,#snSize/4			;@ 60/4=15
+	mov r2,#(snStateEnd-snStateStart)/4		;@ 64/4=16
 rLoop:
 	subs r2,r2,#1
 	strpl r1,[r0,r2,lsl#2]
@@ -133,7 +140,7 @@ sn76496GetStateSize:		;@ Out r0=state size.
 	bx lr
 
 ;@----------------------------------------------------------------------------
-sn76496W:					;@ In r0 = value, r1 = struct-pointer
+sn76496W:					;@ In r0 = value, r1 = struct-pointer, right ch.
 	.type   sn76496W STT_FUNC
 ;@----------------------------------------------------------------------------
 	tst r0,#0x80
@@ -188,7 +195,7 @@ setNoiseFreq:
 	bx lr
 
 ;@----------------------------------------------------------------------------
-sn76496L_W:					;@ In r0 = value, r1 = struct-pointer
+sn76496L_W:					;@ In r0 = value, r1 = struct-pointer, left ch.
 	.type   sn76496L_W STT_FUNC
 ;@----------------------------------------------------------------------------
 	tst r0,#0x80

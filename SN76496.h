@@ -1,5 +1,10 @@
-/*
-*/
+//
+//  SN76496.h
+//  K2Audio
+//
+//  Created by Fredrik Ahlström on 2008-04-02.
+//  Copyright © 2008-2022 Fredrik Ahlström. All rights reserved.
+//
 
 #ifndef SN76496_HEADER
 #define SN76496_HEADER
