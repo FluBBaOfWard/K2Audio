@@ -101,7 +101,9 @@ rLoop:
 	strpl r1,[r0,r2,lsl#2]
 	bhi rLoop
 
-	ldr r2,=(WFEED_SMS<<16)+PFEED_SMS
+	mov r2,#PFEED_SMS
+	strh r2,[r0,#rng]
+	mov r2,#WFEED_SMS
 	strh r2,[r0,#noiseFB]
 	mov r2,#calculatedVolumes
 	str r2,[r0,#currentBits]	;@ Add offset to calculatedVolumes
