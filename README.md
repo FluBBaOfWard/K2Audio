@@ -1,4 +1,4 @@
-# K2Audio V1.6.1
+# K2Audio V1.6.3
 
 SNK NeoGeo Pocket sound chip emulator for ARM32.
 
@@ -13,7 +13,6 @@ Produces signed 16bit interleaved stereo.
 ## Projects that use this code
 
 * https://github.com/FluBBaOfWard/NGPDS
-* https://github.com/FluBBaOfWard/NGPGBA
 
 ## Credits
 

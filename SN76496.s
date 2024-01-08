@@ -3,7 +3,7 @@
 ;@  K2Audio
 ;@
 ;@  Created by Fredrik Ahlström on 2008-04-02.
-;@  Copyright © 2008-2023 Fredrik Ahlström. All rights reserved.
+;@  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
 ;@
 ;@ SNK Neogeo Pocket K2Audio sound chip emulator for ARM32.
 
@@ -107,7 +107,7 @@ rLoop:
 	strh r2,[r0,#noiseFB]
 	mov r2,#calculatedVolumes
 	str r2,[r0,#currentBits]	;@ Add offset to calculatedVolumes
-	str r1,[r0,r2]
+	str r1,[r0,r2]				;@ Clear volume 0
 
 	bx lr
 
@@ -269,14 +269,12 @@ calculateVolumes:			;@ In r2 = snptr
 	add r7,r2,#calculatedVolumes
 	mov r1,#15
 volLoop:
-	ands r0,r1,#0x01
-	movne r0,r3
-	tst r1,#0x02
-	addne r0,r0,r4
-	tst r1,#0x04
-	addne r0,r0,r5
-	tst r1,#0x08
-	addne r0,r0,r6
+	movs r0,r1,lsl#31
+	movmi r0,r3
+	addcs r0,r0,r4
+	teq r1,r1,lsl#29
+	addmi r0,r0,r5
+	addcs r0,r0,r6
 	str r0,[r7,r1,lsl#2]
 	subs r1,r1,#1
 	bne volLoop
