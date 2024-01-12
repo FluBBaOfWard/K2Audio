@@ -74,8 +74,8 @@ innerMixLoop:
 	orrcs r7,r7,#0x20
 
 	ldr lr,[r2,r7]
-	add r10,r10,lr
 	sub r0,r0,#1
+	add r10,r10,lr
 	tst r0,#3
 	bne innerMixLoop
 	eor r10,r10,#0x00008000
@@ -238,7 +238,7 @@ setFreqL:
 ;@----------------------------------------------------------------------------
 calculateVolumes:			;@ In r2 = snptr
 ;@----------------------------------------------------------------------------
-	stmfd sp!,{r0,r1,r3-r7}
+	stmfd sp!,{r0,r1,r3-r6,lr}
 
 	adr r1,attenuation1_4
 
@@ -266,7 +266,7 @@ calculateVolumes:			;@ In r2 = snptr
 	ldr r0,[r1,r0,lsl#2]
 	orr r6,r6,r0,lsl#16
 
-	add r7,r2,#calculatedVolumes
+	add lr,r2,#calculatedVolumes
 	mov r1,#15
 volLoop:
 	movs r0,r1,lsl#31
@@ -275,12 +275,11 @@ volLoop:
 	teq r1,r1,lsl#29
 	addmi r0,r0,r5
 	addcs r0,r0,r6
-	str r0,[r7,r1,lsl#2]
+	str r0,[lr,r1,lsl#2]
 	subs r1,r1,#1
 	bne volLoop
 	strb r1,[r2,#snAttChg]
-	ldmfd sp!,{r0,r1,r3-r7}
-	bx lr
+	ldmfd sp!,{r0,r1,r3-r6,pc}
 ;@----------------------------------------------------------------------------
 attenuation:						;@ each step * 0.79370053 (-2dB?)
 	.long 0x3FFF3FFF,0x32CB32CB,0x28512851,0x20002000,0x19661966,0x14281428,0x10001000,0x0CB30CB3

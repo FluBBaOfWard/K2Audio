@@ -2,7 +2,7 @@ SN76496 revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-
 
 
-V1.6.3 - 2024-01-08 (FluBBa)
+V1.6.3 - 2024-01-12 (FluBBa)
 	Small optimization of calculateVolumes.
 
 V1.6.2 - 2022-10-30 (FluBBa)
