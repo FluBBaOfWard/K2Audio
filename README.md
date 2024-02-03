@@ -9,6 +9,9 @@ SN76496/SN76489 with stereo extension, from the NeoGeo Pocket.
 First alloc chip struct, call reset with chip struct.
 Call SN76496Mixer with length, destination and chip struct.
 Produces signed 16bit interleaved stereo.
+You define SN_UPSHIFT to a number, this is how many times the internal
+sampling is doubled. You can add "-DSN_UPSHIFT=2" to the "make" file to
+make the internal clock speed 4 times higher (this is the default).
 
 ## Projects that use this code
 
