@@ -15,7 +15,7 @@ make the internal clock speed 4 times higher (this is the default).
 
 ## Projects that use this code
 
-* https://github.com/FluBBaOfWard/NGPDS
+* <https://github.com/FluBBaOfWard/NGPDS>
 
 ## Credits
 
@@ -23,4 +23,4 @@ Fredrik Ahlström
 
 X/Twitter @TheRealFluBBa
 
-https://www.github.com/FluBBaOfWard
+<https://www.github.com/FluBBaOfWard>

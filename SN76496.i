@@ -10,7 +10,7 @@
 
 #if !__ASSEMBLER__
 	#error This header file is only for use in assembly files!
-#endif	// !__ASSEMBLER__
+#endif
 
 							;@ SN76496.s
 	.struct 0

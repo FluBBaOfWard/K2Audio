@@ -85,7 +85,7 @@ int sn76496GetStateSize(void);
 /**
  * Runs the sound chip for count number of cycles shifted by "SN_UPSHIFT",
  * the default is 2, so if actual chip would output 218kHz this mixer would render at ~55kHz.
- * @param  *count: Number of samples to generate.
+ * @param  count: Number of samples to generate.
  * @param  *dest: Pointer to buffer where sound is rendered.
  * @param  *chip: The SN76496 chip.
  */
