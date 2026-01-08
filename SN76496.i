@@ -3,11 +3,8 @@
 ;@  K2Audio
 ;@
 ;@  Created by Fredrik Ahlström on 2008-04-02.
-;@  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
+;@  Copyright © 2008-2026 Fredrik Ahlström. All rights reserved.
 ;@
-;@ ASM header for the K2GE Audio emulator
-;@
-
 #if !__ASSEMBLER__
 	#error This header file is only for use in assembly files!
 #endif

@@ -3,7 +3,7 @@
 //  K2Audio
 //
 //  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2024 Fredrik Ahlström. All rights reserved.
+//  Copyright © 2008-2026 Fredrik Ahlström. All rights reserved.
 //
 
 #ifndef SN76496_HEADER

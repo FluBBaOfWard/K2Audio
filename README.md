@@ -1,4 +1,4 @@
-# K2Audio V1.6.3
+# K2Audio V1.6.7
 
 SNK NeoGeo Pocket sound chip emulator for ARM32.
 
@@ -21,6 +21,8 @@ make the internal clock speed 4 times higher (this is the default).
 
 Fredrik Ahlström
 
-X/Twitter @TheRealFluBBa
+<https://bsky.app/profile/therealflubba.bsky.social>
 
 <https://www.github.com/FluBBaOfWard>
+
+X/Twitter @TheRealFluBBa
