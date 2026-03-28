@@ -1,4 +1,4 @@
-# K2Audio V1.6.7
+# K2Audio V1.6.8
 
 SNK NeoGeo Pocket sound chip emulator for ARM32.
 

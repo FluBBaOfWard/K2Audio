@@ -2,6 +2,9 @@ SN76496 revision history
 -=-=-=-=-=-=-=-=-=-=-=-=-
 
 
+V1.6.8 - 2026-03-28 (FluBBa)
+	Fixed noise channel period.
+
 V1.6.7 - 2026-01-08 (FluBBa)
 	Tiny optimization to mixer.
 

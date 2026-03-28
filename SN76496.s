@@ -17,9 +17,9 @@
 	.global sn76496Mixer
 	.global sn76496W
 	.global sn76496L_W
-								;@ These values are for the SMS/GG/MD vdp/sound chip.
-	.equ PFEED_SMS,	0x8000		;@ Periodic Noise Feedback
-	.equ WFEED_SMS,	0x9000		;@ White Noise Feedback
+
+	.equ PFEED_SN,	0x4000		;@ Periodic Noise Feedback
+	.equ WFEED_SN,	0x6000		;@ White Noise Feedback
 
 #if !defined(SN_UPSHIFT)
 	#define SN_UPSHIFT (2)
@@ -105,9 +105,9 @@ rLoop:
 	strpl r1,[r0,r2,lsl#2]
 	bhi rLoop
 
-	mov r2,#PFEED_SMS
+	mov r2,#PFEED_SN
 	strh r2,[r0,#rng]
-	mov r2,#WFEED_SMS
+	mov r2,#WFEED_SN
 	strh r2,[r0,#noiseFB]
 	mov r2,#calculatedVolumes
 	str r2,[r0,#currentBits]	;@ Add offset to calculatedVolumes
@@ -189,9 +189,9 @@ setNoiseFreq:
 	and r2,r0,#3
 	strb r2,[r1,#ch3Reg]
 	tst r0,#4
-	mov r0,#PFEED_SMS			;@ Periodic noise
+	mov r0,#PFEED_SN			;@ Periodic noise
 	strh r0,[r1,#rng]
-	movne r0,#WFEED_SMS			;@ White noise
+	movne r0,#WFEED_SN			;@ White noise
 	strh r0,[r1,#noiseFB]
 	mov r3,#0x0400				;@ These values sound ok
 	mov r3,r3,lsl r2
