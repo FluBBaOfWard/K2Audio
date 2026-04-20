@@ -1,5 +1,6 @@
 # K2Audio V1.6.8
 
+This is now included in the SMS/GG branch of <https://github.com/FluBBaOfWard/SN76496>
 SNK NeoGeo Pocket sound chip emulator for ARM32.
 
 SN76496/SN76489 with stereo extension, from the NeoGeo Pocket.
