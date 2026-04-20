@@ -2,10 +2,9 @@
 //  SN76496.h
 //  K2Audio
 //
-//  Created by Fredrik Ahlström on 2008-04-02.
-//  Copyright © 2008-2026 Fredrik Ahlström. All rights reserved.
+//  Created by Fredrik Ahlström on 2005-07-11.
+//  Copyright © 2005-2026 Fredrik Ahlström. All rights reserved.
 //
-
 #ifndef SN76496_HEADER
 #define SN76496_HEADER
 
@@ -23,42 +22,42 @@ typedef struct {
 	u16 ch3Frq;
 	u16 ch3Cnt;
 
-	u32 currentBits;
-
 	u32 rng;
+	u32 currentBits;
 	u32 noiseFB;
 
 	u8 snAttChg;
-	u8 snLastReg;
-	u8 snLastRegL;
+	u8 ch3Reg;
+	u8 ggStereo;
 	u8 snPadding[1];
 
-	u16 ch0Reg;
-	u16 ch0Att;
-	u16 ch1Reg;
-	u16 ch1Att;
+	u8 padding0[2];
+	u8 ch0AttL;
+	u8 ch0Att;
+	u8 padding1[2];
+	u8 ch1AttL;
+	u8 ch1Att;
 	u16 ch2Reg;
-	u16 ch2Att;
-	u16 ch3Reg;
-	u16 ch3Att;
+	u8 ch2AttL;
+	u8 ch2Att;
+	u8 padding3[2];
+	u8 ch3AttL;
+	u8 ch3Att;
 
-	u16 ch0RegL;
-	u16 ch0AttL;
-	u16 ch1RegL;
-	u16 ch1AttL;
-	u16 ch2RegL;
-	u16 ch2AttL;
-	u16 ch3RegL;
-	u16 ch3AttL;
+	u32 lastReg;
+	u32 lastRegL;
 
+	u32 noiseType;
+	u32 padding4[1];
 	s16 calculatedVolumes[16*2];
 } SN76496;
 
 /**
  * Reset/initialize SN76496 chip.
+ * @param  chipType: selects version of chip, 0=SN76496, 1=SMS/GG VDP version, 2=NCR 8496.
  * @param  *chip: The SN76496 chip.
  */
-void sn76496Reset(SN76496 *chip);
+void sn76496Reset(int chiptype, SN76496 *chip);
 
 /**
  * Saves the state of the SN76496 chip to the destination.
@@ -103,7 +102,7 @@ void sn76496W(u8 val, SN76496 *chip);
  * @param  value: value to write.
  * @param  *chip: The SN76496 chip.
  */
-void sn76496L_W(u8 val, SN76496 *chip);
+void sn76496LW(u8 val, SN76496 *chip);
 
 
 #ifdef __cplusplus

@@ -2,8 +2,8 @@
 ;@  SN76496.i
 ;@  K2Audio
 ;@
-;@  Created by Fredrik Ahlström on 2008-04-02.
-;@  Copyright © 2008-2026 Fredrik Ahlström. All rights reserved.
+;@  Created by Fredrik Ahlström on 2005-07-11.
+;@  Copyright © 2005-2026 Fredrik Ahlström. All rights reserved.
 ;@
 #if !__ASSEMBLER__
 	#error This header file is only for use in assembly files!
@@ -22,36 +22,34 @@ ch2Cnt:			.short 0
 ch3Frq:			.short 0
 ch3Cnt:			.short 0
 
-currentBits:	.long 0
-
 rng:			.long 0
+currentBits:	.long 0
 noiseFB:		.long 0
 
 snAttChg:		.byte 0
-snLastReg:		.byte 0
-snLastRegL:		.byte 0
-snPadding:		.space 1
+ch3Reg:			.byte 0
+ggStereo:		.byte 0
+snPadding:		.skip 1
 
-ch0Reg:			.short 0
-ch0Att:			.short 0
-ch1Reg:			.short 0
-ch1Att:			.short 0
+snPadding0:		.short 0
+ch0AttL:		.byte 0
+ch0Att:			.byte 0
+snPadding1:		.short 0
+ch1AttL:		.byte 0
+ch1Att:			.byte 0
 ch2Reg:			.short 0
-ch2Att:			.short 0
-ch3Reg:			.short 0
-ch3Att:			.short 0
+ch2AttL:		.byte 0
+ch2Att:			.byte 0
+snPadding3:		.short 0
+ch3AttL:		.byte 0
+ch3Att:			.byte 0
 
-ch0RegL:		.short 0
-ch0AttL:		.short 0
-ch1RegL:		.short 0
-ch1AttL:		.short 0
-ch2RegL:		.short 0
-ch2AttL:		.short 0
-ch3RegL:		.short 0
-ch3AttL:		.short 0
+snLastReg:		.long 0
+snLastRegL:		.long 0
 
 snStateEnd:
-
+noiseType:		.long 0
+snPadding4:		.skip 1*4
 calculatedVolumes:	.space 16*2*2
 
 snSize:
